@@ -101,17 +101,24 @@ document.addEventListener('mouseup', e => {
       const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
 
       popup.addEventListener('change', e => {
-        if (!e.target.matches('[name="boards"]')) {
-          return;
+        if (e.target.matches('[name="boards"]')) {
+          const boardId = e.target.value;
+          UserSelection.lastSelection.selectedBoardId = boardId;
+
+          getLists(boardId, lists => {
+            setPopupHTML(popup, UserSelection.lastSelection, member, lists);
+          });
         }
 
-        const boardId = e.target.value;
+        if (e.target.matches('[name="lists"]')) {
+          const listId = e.target.value;
+          UserSelection.lastSelection.selectedListId = listId;
+        }
 
-        UserSelection.lastSelection.selectedBoardId = boardId;
-
-        getLists(boardId, lists => {
-          setPopupHTML(popup, UserSelection.lastSelection, member, lists);
-        });
+        if (e.target.matches('[name="card"]')) {
+          const text = e.target.value;
+          UserSelection.lastSelection.text = text;
+        }
       });
 
       icon.remove();
