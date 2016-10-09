@@ -52,7 +52,7 @@ function setPopupHTML(popup, params) {
     popup.innerHTML = `
       <div class="trellify-popup__select">
         <select name="boards">
-          <option value="none">Choose board</option>
+          <option value="null">Choose board</option>
           ${
             member.boards.map(board => {
               return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
@@ -68,7 +68,7 @@ function setPopupHTML(popup, params) {
                 return `<option value="${list.id}">${list.name}</option>`
               })
               :
-              `<option value="none">Choose list</option>`
+              `<option value="null">Choose list</option>`
           }
         </select>
       </div>
@@ -123,7 +123,7 @@ document.addEventListener('mouseup', e => {
       const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
 
       popup.addEventListener('change', e => {
-        if (e.target.matches('[name="boards"]')) {
+        if (e.target.matches('[name="boards"]') && e.target.value !== 'null') {
           const boardId = e.target.value;
           UserSelection.lastSelection.selectedBoardId = boardId;
 
@@ -132,6 +132,13 @@ document.addEventListener('mouseup', e => {
             UserSelection.lastSelection.selectedListId = lists[0].id;
             setPopupHTML(popup, { userSelection, member, lists });
           });
+        }
+
+        if (e.target.matches('[name="boards"]') && e.target.value === 'null') {
+          const userSelection = UserSelection.lastSelection;
+          UserSelection.lastSelection.selectedBoardId = null;
+          UserSelection.lastSelection.selectedListId = null;
+          setPopupHTML(popup, { userSelection, member, lists: null });
         }
 
         if (e.target.matches('[name="lists"]')) {
