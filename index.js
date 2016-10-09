@@ -27,33 +27,45 @@ const getLists = (boardId, callback) => {
   });
 }
 
-function renderPopupAtSelection(userSelection, member) {
-  const { text, rect } = userSelection;
-
-  const tPopup = document.createElement('div');
-
-  tPopup.classList.add('trellify-popup');
-  tPopup.innerHTML = `
+function setPopupHTML(popup, userSelection, member, lists) {
+  popup.innerHTML = `
     <div class="trellify-popup__select">
       <select name="boards">
         <option value="none">Choose board</option>
         ${
           member.boards.map(board => {
-            return `<option value="${board.id}">${board.name}</option>`
+            return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
           })
         }
       </select>
     </div>
     <div class="trellify-popup__select">
-      <select disabled name="lists">
-        <option value="none">Choose list</option>
+      <select ${lists ? `` : `disabled`} name="lists">
+        ${
+          lists ?
+            lists.map(list => {
+              return `<option value="${list.id}">${list.name}</option>`
+            })
+            :
+            `<option value="none">Choose list</option>`
+        }
       </select>
     </div>
     <div class="trellify-popup__card">
-      <textarea name="card">${text}</textarea>
+      <textarea name="card">${userSelection.text}</textarea>
     </div>
     <button class="trellify-popup__btn">Send to Trello</button>
   `;
+}
+
+function renderPopupAtSelection(userSelection, member) {
+  const { rect } = userSelection;
+
+  const tPopup = document.createElement('div');
+
+  tPopup.classList.add('trellify-popup');
+
+  setPopupHTML(tPopup, userSelection, member);
 
   let tPopupX;
 
@@ -88,12 +100,17 @@ document.addEventListener('mouseup', e => {
     getMember(member => {
       const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
 
-      popup.querySelector('[name="boards"]').addEventListener('change', e => {
+      popup.addEventListener('change', e => {
+        if (!e.target.matches('[name="boards"]')) {
+          return;
+        }
+
         const boardId = e.target.value;
 
-        getLists(boardId, lists => {
+        UserSelection.lastSelection.selectedBoardId = boardId;
 
-          console.log(lists);
+        getLists(boardId, lists => {
+          setPopupHTML(popup, UserSelection.lastSelection, member, lists);
         });
       });
 
