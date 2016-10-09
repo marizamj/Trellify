@@ -126,12 +126,10 @@ document.addEventListener('mouseup', e => {
 
   if (e.target.classList.contains('trellify-icon')) {
     const userSelection = UserSelection.lastSelection;
-
     const popup = renderPopupAtSelection(userSelection, null);
 
     getMember(member => {
       setPopupHTML(popup, { userSelection, member });
-      // const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
 
       popup.addEventListener('change', e => {
         if (e.target.matches('[name="boards"]') && e.target.value !== 'null') {
