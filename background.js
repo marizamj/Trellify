@@ -9,13 +9,6 @@ const getMember = (function() {
   let promise = null;
 
   return function(token) {
-    // if (promise) {
-    //   console.log('getMember: using cache');
-    //   return promise;
-    // }
-
-    console.log('getMember: calling trello');
-
     promise = fetch(`https://trello.com/1/tokens/${token}/member?key=${appKey}`)
       .then(res => res.json())
       .then(json => {
@@ -49,8 +42,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     token = request.token;
 
     chrome.storage.sync.set({ token }, () => {
-      console.log('Token saved.');
-
       sendResponse(true);
     });
 
@@ -59,8 +50,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
   if (request.type === 'get-member') {
     getMember(token).then(member => {
-      console.log('Got member', member);
-
       sendResponse(member);
     });
 
@@ -81,6 +70,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     });
 
     return true;
+  }
+
+  if (request.type === 'open-new-card') {
+    window.open(request.url);
   }
 });
 

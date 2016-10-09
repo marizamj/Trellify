@@ -15,8 +15,6 @@ UserSelection.storeLast = obj => {
 
 const getMember = (callback) => {
   chrome.runtime.sendMessage({ type: 'get-member' }, (member) => {
-    console.log('Got response', member);
-
     callback(member);
   });
 }
@@ -33,12 +31,16 @@ const sendCard = (card, callback) => {
   });
 }
 
+const openInTrello = (url) => {
+  chrome.runtime.sendMessage({ type: 'open-new-card', url });
+}
+
 function setPopupHTML(popup, params) {
   if (params.end) {
     const { link } = params;
 
     popup.innerHTML = `
-      <div>Card sent succesfully.</div>
+      <div class="trellify-popup__text">Card sent succesfully.</div>
       <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
       <button class="trellify-popup__btn btn-close">Close</button>
     `;
@@ -127,6 +129,7 @@ document.addEventListener('mouseup', e => {
 
           getLists(boardId, lists => {
             const userSelection = UserSelection.lastSelection;
+            UserSelection.lastSelection.selectedListId = lists[0].id;
             setPopupHTML(popup, { userSelection, member, lists });
           });
         }
@@ -153,11 +156,18 @@ document.addEventListener('mouseup', e => {
       due: null
     };
 
-    console.log(card);
-
     sendCard(card, res => {
       setPopupHTML(popup, { end: true, link: res.url });
     });
+  }
+
+  if (e.target.classList.contains('btn-close')) {
+    popup.remove();
+  }
+
+  if (e.target.classList.contains('btn-link')) {
+    const url = e.target.getAttribute('data-link');
+    openInTrello(url);
   }
 
   const selection = window.getSelection();

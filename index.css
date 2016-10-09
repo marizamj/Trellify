@@ -14,7 +14,8 @@
 .trellify-popup__card [name="card"],
 .trellify-popup__select,
 .trellify-popup__select [name="boards"],
-.trellify-popup__btn {
+.trellify-popup__btn,
+.trellify-popup__text {
   text-transform: none;
   box-sizing: border-box;
   padding: 0;
@@ -75,29 +76,52 @@
   overflow: hidden;
   border-radius: 5px;
   margin-bottom: 10px;
+  height: 35px;
+  line-height: 35px;
+  font-size: 18px;
+}
+
+.trellify-popup__select [name="lists"]:disabled {
+  border: none;
 }
 
 .trellify-popup__select [name="boards"],
 .trellify-popup__select [name="lists"] {
-  width: 280px;
+  border: none;
+  width: 270px;
   font-family: 'Roboto-Regular', sans-serif;
   background: transparent;
   color: white;
   cursor: pointer;
-  font-size: 20px;
+  height: 35px;
   padding: 5px;
-  line-height: 30px;
 }
 
 .trellify-popup__btn {
-  font-size: 18px;
+  font-size: 16px;
   font-family: 'Roboto-Regular', sans-serif;
-  background: linear-gradient(to bottom,#61BD4F 0,#5AAC44 100%);
+  background: linear-gradient(to bottom, #61bd4f 0, #5aac44 100%);
   color: #fff;
   cursor: pointer;
-  padding: 10px;
+  width: 200px;
+  height: 50px;
+  /*padding: 15px 40px;*/
   /*border: none;*/
   border-radius: 5px;
   box-shadow: 2px 2px 2px #ccc;
+  margin-bottom: 10px;
+}
+
+.trellify-popup__btn:hover {
+  background: linear-gradient(to bottom, #5aac44 0, #519839 100%);
+}
+
+.btn-close {
+  font-weight: bold;
+}
+
+.trellify-popup__text {
+  font-family: 'Roboto-Regular';
+  margin-bottom: 10px;
 }
 
