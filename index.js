@@ -33,35 +33,49 @@ const sendCard = (card, callback) => {
   });
 }
 
-function setPopupHTML(popup, userSelection, member, lists) {
-  popup.innerHTML = `
-    <div class="trellify-popup__select">
-      <select name="boards">
-        <option value="none">Choose board</option>
-        ${
-          member.boards.map(board => {
-            return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
-          })
-        }
-      </select>
-    </div>
-    <div class="trellify-popup__select">
-      <select ${lists ? `` : `disabled`} name="lists">
-        ${
-          lists ?
-            lists.map(list => {
-              return `<option value="${list.id}">${list.name}</option>`
+function setPopupHTML(popup, params) {
+  if (params.end) {
+    const { link } = params;
+
+    popup.innerHTML = `
+      <div>Card sent succesfully.</div>
+      <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
+      <button class="trellify-popup__btn btn-close">Close</button>
+    `;
+
+  } else {
+
+    const { userSelection, member, lists } = params;
+
+    popup.innerHTML = `
+      <div class="trellify-popup__select">
+        <select name="boards">
+          <option value="none">Choose board</option>
+          ${
+            member.boards.map(board => {
+              return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
             })
-            :
-            `<option value="none">Choose list</option>`
-        }
-      </select>
-    </div>
-    <div class="trellify-popup__card">
-      <textarea name="card">${userSelection.text}</textarea>
-    </div>
-    <button class="trellify-popup__btn">Send to Trello</button>
-  `;
+          }
+        </select>
+      </div>
+      <div class="trellify-popup__select">
+        <select ${lists ? `` : `disabled`} name="lists">
+          ${
+            lists ?
+              lists.map(list => {
+                return `<option value="${list.id}">${list.name}</option>`
+              })
+              :
+              `<option value="none">Choose list</option>`
+          }
+        </select>
+      </div>
+      <div class="trellify-popup__card">
+        <textarea name="card">${userSelection.text}</textarea>
+      </div>
+      <button class="trellify-popup__btn btn-send">Send to Trello</button>
+    `;
+  }
 }
 
 function renderPopupAtSelection(userSelection, member) {
@@ -71,7 +85,7 @@ function renderPopupAtSelection(userSelection, member) {
 
   tPopup.classList.add('trellify-popup');
 
-  setPopupHTML(tPopup, userSelection, member);
+  setPopupHTML(tPopup, { userSelection, member });
 
   let tPopupX;
 
@@ -112,7 +126,8 @@ document.addEventListener('mouseup', e => {
           UserSelection.lastSelection.selectedBoardId = boardId;
 
           getLists(boardId, lists => {
-            setPopupHTML(popup, UserSelection.lastSelection, member, lists);
+            const userSelection = UserSelection.lastSelection;
+            setPopupHTML(popup, { userSelection, member, lists });
           });
         }
 
@@ -131,7 +146,7 @@ document.addEventListener('mouseup', e => {
     });
   }
 
-  if (e.target.classList.contains('trellify-popup__btn')) {
+  if (e.target.classList.contains('btn-send')) {
     const card = {
       name: UserSelection.lastSelection.text,
       idList: UserSelection.lastSelection.selectedListId,
@@ -141,7 +156,7 @@ document.addEventListener('mouseup', e => {
     console.log(card);
 
     sendCard(card, res => {
-      console.log(res.url);
+      setPopupHTML(popup, { end: true, link: res.url });
     });
   }
 
