@@ -21,6 +21,12 @@ const getMember = (callback) => {
   });
 }
 
+const getLists = (boardId, callback) => {
+  chrome.runtime.sendMessage({ type: 'get-lists', boardId }, lists => {
+    callback(lists);
+  });
+}
+
 function renderPopupAtSelection(userSelection, member) {
   const { text, rect } = userSelection;
 
@@ -62,6 +68,8 @@ function renderPopupAtSelection(userSelection, member) {
   document.body.appendChild(tPopup);
   tPopup.style.left = `${tPopupX}px`;
   tPopup.style.top = `${rect.top + window.scrollY}px`;
+
+  return tPopup;
 }
 
 document.addEventListener('mouseup', e => {
@@ -78,7 +86,16 @@ document.addEventListener('mouseup', e => {
 
   if (e.target.classList.contains('trellify-icon')) {
     getMember(member => {
-      renderPopupAtSelection(UserSelection.lastSelection, member);
+      const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
+
+      popup.querySelector('[name="boards"]').addEventListener('change', e => {
+        const boardId = e.target.value;
+
+        getLists(boardId, lists => {
+
+          console.log(lists);
+        });
+      });
 
       icon.remove();
     });
@@ -104,4 +121,5 @@ document.addEventListener('mouseup', e => {
     tIcon.style.top = `${s.rect.top - 30 + window.scrollY}px`;
   }
 });
+
 

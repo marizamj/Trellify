@@ -28,6 +28,11 @@ const getMember = (function() {
   };
 })();
 
+const getLists = (boardId) => {
+  return fetch(`https://api.trello.com/1/boards/${boardId}/lists?cards=open&card_fields=name&fields=name&key=${appKey}&token=${token}`)
+    .then(res => res.json());
+}
+
 let token;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -49,6 +54,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log('Got member', member);
 
       sendResponse(member);
+    });
+
+    return true;
+  }
+
+  if (request.type === 'get-lists') {
+    getLists(request.boardId).then(lists => {
+      sendResponse(lists);
     });
 
     return true;
