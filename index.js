@@ -27,6 +27,12 @@ const getLists = (boardId, callback) => {
   });
 }
 
+const sendCard = (card, callback) => {
+  chrome.runtime.sendMessage({ type: 'send-card', card }, (link) => {
+    callback(link);
+  });
+}
+
 function setPopupHTML(popup, userSelection, member, lists) {
   popup.innerHTML = `
     <div class="trellify-popup__select">
@@ -126,8 +132,17 @@ document.addEventListener('mouseup', e => {
   }
 
   if (e.target.classList.contains('trellify-popup__btn')) {
-    const value = document.querySelector('[name="card"]').value;
-    console.log(value);
+    const card = {
+      name: UserSelection.lastSelection.text,
+      idList: UserSelection.lastSelection.selectedListId,
+      due: null
+    };
+
+    console.log(card);
+
+    sendCard(card, res => {
+      console.log(res.url);
+    });
   }
 
   const selection = window.getSelection();

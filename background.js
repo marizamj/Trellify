@@ -33,6 +33,14 @@ const getLists = (boardId) => {
     .then(res => res.json());
 }
 
+const sendCard = (card) => {
+  const { name, idList, due } = card;
+
+  return fetch(`https://api.trello.com/1/cards?name=${name}&idList=${idList}&due=${due}&key=${appKey}&token=${token}`, {
+    method: 'POST'
+  }).then(res => res.json());
+}
+
 let token;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -62,6 +70,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.type === 'get-lists') {
     getLists(request.boardId).then(lists => {
       sendResponse(lists);
+    });
+
+    return true;
+  }
+
+  if (request.type === 'send-card') {
+    sendCard(request.card).then(link => {
+      sendResponse(link);
     });
 
     return true;
