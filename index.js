@@ -1,20 +1,5 @@
 const appKey = '9b83fca52b91674cb3b8328a5d81c412';
 
-function findParentNode(nodeToFind, nodeWhereFind) {
-  let node = nodeWhereFind;
-
-  while(node.parentNode) {
-
-    if (node === nodeToFind) {
-      return node;
-    }
-
-    node = node.parentNode;
-  }
-
-  return null;
-}
-
 class UserSelection {
   constructor(selection) {
     this.text = selection.toString().trim();
@@ -41,11 +26,11 @@ document.addEventListener('mouseup', e => {
   const icon = document.querySelector('.trellify-icon');
   const popup = document.querySelector('.trellify-popup');
 
-  if (popup && !findParentNode(popup, e.target)) {
+  if (popup && !popup.contains(e.target)) {
     popup.remove();
   }
 
-  if (icon && !findParentNode(icon, e.target)) {
+  if (icon && !icon.contains(e.target)) {
     icon.remove();
   }
 
