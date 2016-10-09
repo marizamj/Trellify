@@ -49,6 +49,13 @@ function setPopupHTML(popup, params) {
 
     const { userSelection, member, lists } = params;
 
+    if (!member) {
+      popup.innerHTML = `
+        <div class="trellify-popup__text">Loading...</div>
+      `;
+      return;
+    }
+
     popup.innerHTML = `
       <div class="trellify-popup__select">
         <select name="boards">
@@ -84,7 +91,6 @@ function renderPopupAtSelection(userSelection, member) {
   const { rect } = userSelection;
 
   const tPopup = document.createElement('div');
-
   tPopup.classList.add('trellify-popup');
 
   setPopupHTML(tPopup, { userSelection, member });
@@ -119,8 +125,13 @@ document.addEventListener('mouseup', e => {
   }
 
   if (e.target.classList.contains('trellify-icon')) {
+    const userSelection = UserSelection.lastSelection;
+
+    const popup = renderPopupAtSelection(userSelection, null);
+
     getMember(member => {
-      const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
+      setPopupHTML(popup, { userSelection, member });
+      // const popup = renderPopupAtSelection(UserSelection.lastSelection, member);
 
       popup.addEventListener('change', e => {
         if (e.target.matches('[name="boards"]') && e.target.value !== 'null') {
