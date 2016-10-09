@@ -7,7 +7,7 @@ if (match && match.length === 2) {
 
   const trelloToken = match[1];
 
-  chrome.runtime.sendMessage({ trelloToken }, () => {
+  chrome.runtime.sendMessage({ type: 'save-token', token: trelloToken }, () => {
     window.close();
   });
 }

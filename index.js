@@ -28,20 +28,13 @@ UserSelection.storeLast = obj => {
   UserSelection.lastSelection = obj;
 };
 
-let member;
-let token;
+const getMember = (callback) => {
+  chrome.runtime.sendMessage({ type: 'get-member' }, (member) => {
+    console.log('Got response', member);
 
-const port = chrome.runtime.connect({ name: 'content' });
-
-port.onMessage.addListener((message, sender) => {
-  if(message.member){
-    member = message.member;
-  }
-
-  if(message.token){
-    token = message.token;
-  }
-});
+    callback(member);
+  });
+}
 
 document.addEventListener('mouseup', e => {
   const s = new UserSelection(window.getSelection());
@@ -57,43 +50,47 @@ document.addEventListener('mouseup', e => {
   }
 
   if (e.target.classList.contains('trellify-icon')) {
-    const tPopup = document.createElement('div');
-    tPopup.classList.add('trellify-popup');
-    tPopup.innerHTML = `
-      <div class="trellify-popup__select">
-        <select name="boards">
-          <option value="none">Choose board</option>
-          ${
-            member.boards.map(board => {
-              return `<option value="${board.id}">${board.name}</option>`
-            })
-          }
-        </select>
-      </div>
-      <div class="trellify-popup__select">
-        <select disabled name="lists">
-          <option value="none">Choose list</option>
-        </select>
-      </div>
-      <div class="trellify-popup__card">
-        <textarea name="card">${UserSelection.lastSelection.text}</textarea>
-      </div>
-      <button class="trellify-popup__btn">Send to Trello</button>
-    `;
 
-    let tPopupX;
+    getMember(member => {
+      const tPopup = document.createElement('div');
+      tPopup.classList.add('trellify-popup');
+      tPopup.innerHTML = `
+        <div class="trellify-popup__select">
+          <select name="boards">
+            <option value="none">Choose board</option>
+            ${
+              member.boards.map(board => {
+                return `<option value="${board.id}">${board.name}</option>`
+              })
+            }
+          </select>
+        </div>
+        <div class="trellify-popup__select">
+          <select disabled name="lists">
+            <option value="none">Choose list</option>
+          </select>
+        </div>
+        <div class="trellify-popup__card">
+          <textarea name="card">${UserSelection.lastSelection.text}</textarea>
+        </div>
+        <button class="trellify-popup__btn">Send to Trello</button>
+      `;
 
-    if (s.rect.right - 300 < 10) {
-      tPopupX = 10;
-    } else if (s.rect.right > window.innerWidth - 10) {
-      tPopupX = window.innerWidth - 310;
-    } else {
-      tPopupX = s.rect.right - 300;
-    }
+      let tPopupX;
 
-    document.body.appendChild(tPopup);
-    tPopup.style.left = `${tPopupX}px`;
-    tPopup.style.top = `${s.rect.top + window.scrollY}px`;
+      if (s.rect.right - 300 < 10) {
+        tPopupX = 10;
+      } else if (s.rect.right > window.innerWidth - 10) {
+        tPopupX = window.innerWidth - 310;
+      } else {
+        tPopupX = s.rect.right - 300;
+      }
+
+      document.body.appendChild(tPopup);
+      tPopup.style.left = `${tPopupX}px`;
+      tPopup.style.top = `${s.rect.top + window.scrollY}px`;
+    });
+
   }
 
   if (e.target.classList.contains('trellify-popup__btn')) {

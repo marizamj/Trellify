@@ -5,68 +5,54 @@ function trelloAuth() {
   window.open(url);
 }
 
-function getMember(token, callback) {
-  fetch(`https://trello.com/1/tokens/${token}/member?key=${appKey}`)
-  .then(res => res.json())
-  .then(json => {
+const getMember = (function() {
+  let promise = null;
 
-    fetch(`https://api.trello.com/1/members/${json.id}?fields=username,fullName,url&boards=all&board_fields=name&organizations=all&organization_fields=displayName&key=${appKey}&token=${token}`)
-    .then(res => res.json())
-    .then(json => {
-      callback(json);
-    });
-  });
-}
+  return function(token) {
+    // if (promise) {
+    //   console.log('getMember: using cache');
+    //   return promise;
+    // }
+
+    console.log('getMember: calling trello');
+
+    promise = fetch(`https://trello.com/1/tokens/${token}/member?key=${appKey}`)
+      .then(res => res.json())
+      .then(json => {
+
+        return fetch(`https://api.trello.com/1/members/${json.id}?fields=username,fullName,url&boards=all&board_fields=name&organizations=all&organization_fields=displayName&key=${appKey}&token=${token}`)
+        .then(res => res.json());
+      });
+
+    return promise;
+  };
+})();
 
 let token;
-// let member;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  if (request.trelloToken) {
-    sendResponse(true);
 
-    token = request.trelloToken;
+  if (request.type === 'save-token') {
+    token = request.token;
 
-    chrome.runtime.onConnect.addListener(function(port){
-      port.postMessage({ token });
-    });
-
-    chrome.storage.sync.set({ token: request.trelloToken }, () => {
+    chrome.storage.sync.set({ token }, () => {
       console.log('Token saved.');
+
+      sendResponse(true);
     });
 
-    getMember(token, member => {
-      chrome.runtime.onConnect.addListener(function(port){
-        port.postMessage({ member });
-      });
-    });
+    return true;
   }
 
-  if (request.message === 'Member request.') {
-    fetch(`https://trello.com/1/tokens/${token}/member?key=${appKey}`)
-    .then(res => res.json())
-    .then(json => {
-      console.log('response to content message');
-      sendResponse({ json });
+  if (request.type === 'get-member') {
+    getMember(token).then(member => {
+      console.log('Got member', member);
+
+      sendResponse(member);
     });
 
-    sendResponse(true);
+    return true;
   }
 });
 
-
-// const run = new Promise((resolve, reject) => {
-
-// });
-
 trelloAuth();
-
-
-// chrome.storage.sync.get('token', (obj) => { token = obj.token; });
-
-
-
-
-
-// 568e6d91a9939f46efd45c5a
-// 568fc9087c977a45833a91da
