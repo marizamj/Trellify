@@ -1,0 +1,44 @@
+{
+  "manifest_version": 2,
+
+  "name": "Trellify",
+  "description": "This extension allows to create cards in Trello.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "icon2.png",
+    "default_popup": "popup.html",
+    "default_title": "Send to Trello"
+  },
+
+  "background": {
+    "page": "background.html",
+    "persistent": true
+  },
+
+  "content_security_policy": "script-src 'self' https://*.trello.com https://code.jquery.com/; object-src 'self'",
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["index.js"],
+      "css": ["index.css"]
+    },
+    {
+      "matches": ["https://trello.com/token=*"],
+      "js": ["trello.js"]
+    }
+  ],
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "https://ajax.googleapis.com/"
+  ],
+
+  "web_accessible_resources": [
+    "icon.png",
+    "Roboto/Roboto-Light.ttf",
+    "Roboto/Roboto-Regular.ttf"
+  ]
+}
