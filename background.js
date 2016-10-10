@@ -1,8 +1,18 @@
 const appKey = '9b83fca52b91674cb3b8328a5d81c412';
 
+let token;
+
 function trelloAuth() {
-  const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
-  window.open(url);
+  chrome.storage.sync.get('token', (obj) => {
+    if (obj.token) {
+      token = obj.token;
+
+    } else {
+
+      const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
+      window.open(url);
+    }
+  });
 }
 
 const getMember = (function() {
@@ -33,8 +43,6 @@ const sendCard = (card) => {
     method: 'POST'
   }).then(res => res.json());
 }
-
-let token;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
