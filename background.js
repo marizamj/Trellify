@@ -1,47 +1,56 @@
+let token;
 const appKey = '9b83fca52b91674cb3b8328a5d81c412';
 
-let token;
+function trelloFetch(url, params, method) {
+  const appKey = '9b83fca52b91674cb3b8328a5d81c412';
+  const paramsWithKey = Object.assign({}, params, { key: appKey });
+  const keyValues = Object.keys(paramsWithKey).map(key => `${key}=${paramsWithKey[key]}`);
+
+  return fetch(
+    `https://trello.com/1/${url}?${keyValues.join('&')}`,
+    method === 'POST' ? { method } : {}
+  ).then(res => res.json())
+}
 
 function trelloAuth() {
+  // chrome.storage.sync.remove('token', () => {
   chrome.storage.sync.get('token', (obj) => {
     if (obj.token) {
       token = obj.token;
 
     } else {
-
       const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
       window.open(url);
     }
   });
+  // });
 }
 
-const getMember = (function() {
-  let promise = null;
-
-  return function(token) {
-    promise = fetch(`https://trello.com/1/tokens/${token}/member?key=${appKey}`)
-      .then(res => res.json())
-      .then(json => {
-
-        return fetch(`https://api.trello.com/1/members/${json.id}?fields=username,fullName,url&boards=all&board_fields=name&organizations=all&organization_fields=displayName&key=${appKey}&token=${token}`)
-        .then(res => res.json());
+const getMember = () => {
+  return trelloFetch(`tokens/${token}/member`, {})
+    .then(res => {
+      return trelloFetch(`members/${res.id}`, {
+        'fields': 'username,fullName,url',
+        'boards': 'all',
+        'board_fields': 'name',
+        token
       });
-
-    return promise;
-  };
-})();
+    })
+}
 
 const getLists = (boardId) => {
-  return fetch(`https://api.trello.com/1/boards/${boardId}/lists?cards=open&card_fields=name&fields=name&key=${appKey}&token=${token}`)
-    .then(res => res.json());
+  return trelloFetch(`boards/${boardId}/lists`, {
+    cards: 'open',
+    card_fields: 'name',
+    fields: 'name',
+    token
+  });
 }
 
 const sendCard = (card) => {
   const { name, idList, due } = card;
 
-  return fetch(`https://api.trello.com/1/cards?name=${name}&idList=${idList}&due=${due}&key=${appKey}&token=${token}`, {
-    method: 'POST'
-  }).then(res => res.json());
+  return trelloFetch(`cards`, { name, idList, due, token }, 'POST');
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -57,7 +66,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
 
   if (request.type === 'get-member') {
-    getMember(token).then(member => {
+    getMember().then(member => {
       sendResponse(member);
     });
 
