@@ -32,7 +32,7 @@ const sendCard = (card, callback) => {
 }
 
 const openInTrello = (url) => {
-  chrome.runtime.sendMessage({ type: 'open-new-card', url });
+  chrome.runtime.sendMessage({ type: 'open-trello', url });
 }
 
 function setPopupHTML(popup, params) {
@@ -45,16 +45,23 @@ function setPopupHTML(popup, params) {
       <button class="trellify-popup__btn btn-close">Close</button>
     `;
 
-  } else {
+  }
 
+  if (params.member === 'no-member' || !params.member && !params.end) {
+    popup.innerHTML = `
+      <div class="trellify-popup__text">Loading...</div>
+    `;
+  }
+
+  if (params.member === 'no-token') {
+    popup.innerHTML = `
+      <div class="trellify-popup__text">Authorize to use Trellify.</div>
+      <button class="trellify-popup__btn btn-auth">Authorize</button>
+    `;
+  }
+
+  if (params.member && params.member !== 'no-token' && params.member !== 'no-member') {
     const { userSelection, member, lists } = params;
-
-    if (!member) {
-      popup.innerHTML = `
-        <div class="trellify-popup__text">Loading...</div>
-      `;
-      return;
-    }
 
     popup.innerHTML = `
       <div class="trellify-popup__select">
@@ -126,10 +133,16 @@ document.addEventListener('mouseup', e => {
 
   if (e.target.classList.contains('trellify-icon')) {
     const userSelection = UserSelection.lastSelection;
-    const popup = renderPopupAtSelection(userSelection, null);
+    const popup = renderPopupAtSelection(userSelection, 'no-member');
 
     getMember(member => {
-      setPopupHTML(popup, { userSelection, member });
+      if (member && member.error === 'no-token') {
+        setPopupHTML(popup, { member: 'no-token' });
+      }
+
+      if (member && !member.error) {
+        setPopupHTML(popup, { userSelection, member });
+      }
 
       popup.addEventListener('change', e => {
         if (e.target.matches('[name="boards"]') && e.target.value !== 'null') {
@@ -184,6 +197,12 @@ document.addEventListener('mouseup', e => {
   if (e.target.classList.contains('btn-link')) {
     const url = e.target.getAttribute('data-link');
     openInTrello(url);
+  }
+
+  if (e.target.classList.contains('btn-auth')) {
+    chrome.runtime.sendMessage({ type: 'authorize' }, () => {
+      popup.remove();
+    });
   }
 
   const selection = window.getSelection();

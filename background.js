@@ -1,5 +1,11 @@
-let token;
 const appKey = '9b83fca52b91674cb3b8328a5d81c412';
+let token;
+
+chrome.storage.sync.get('token', (obj) => {
+  if (obj.token) {
+    token = obj.token;
+  }
+});
 
 function trelloFetch(url, params, method) {
   const appKey = '9b83fca52b91674cb3b8328a5d81c412';
@@ -14,15 +20,15 @@ function trelloFetch(url, params, method) {
 
 function trelloAuth() {
   // chrome.storage.sync.remove('token', () => {
-  chrome.storage.sync.get('token', (obj) => {
-    if (obj.token) {
-      token = obj.token;
+  const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
+  window.open(url);
+  // chrome.storage.sync.get('token', (obj) => {
+  //   if (obj.token) {
+  //     token = obj.token;
 
-    } else {
-      const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
-      window.open(url);
-    }
-  });
+  //   } else {
+  //   }
+  // });
   // });
 }
 
@@ -66,11 +72,16 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
 
   if (request.type === 'get-member') {
-    getMember().then(member => {
-      sendResponse(member);
-    });
+    if (token) {
+      getMember().then(member => {
+        sendResponse(member);
+      });
 
-    return true;
+      return true;
+    } else {
+
+      sendResponse({ error: 'no-token' });
+    }
   }
 
   if (request.type === 'get-lists') {
@@ -89,9 +100,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
   }
 
-  if (request.type === 'open-new-card') {
+  if (request.type === 'open-trello') {
     window.open(request.url);
+
+    sendResponse(true);
+  }
+
+  if (request.type === 'authorize') {
+    trelloAuth();
+
+    sendResponse(true);
   }
 });
 
-trelloAuth();
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  console.log(changes, namespace);
+  if (!changes.token.newValue) {
+    token = null;
+  }
+});
+
+// trelloAuth();

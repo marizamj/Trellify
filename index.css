@@ -64,11 +64,9 @@
 .trellify-popup__card [name="card"] {
   width: 100%;
   height: 100%;
-  /*border: none;*/
   font-size: 18px;
   resize: none;
   outline-color: #ddd;
-  /*padding: 0;*/
 }
 
 .trellify-popup__select {

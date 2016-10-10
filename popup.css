@@ -8,9 +8,40 @@ html, body {
 }
 
 .root {
-  padding: 10px;
   width: 300px;
   color: #144a6a;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 300;
+  text-align: center;
+}
+
+.header {
+  height: 20px;
+  line-height: 20px;
+  font-size: 14px;
+  color: white;
+  background: rgb(0, 121, 191);
+  border-radius: 5px;
+}
+
+.popup-text {
+  margin: 10px;
+}
+
+.trellify-popup__btn {
+  font-size: 16px;
+  font-family: 'Roboto-Regular', sans-serif;
+  background: linear-gradient(to bottom, #61bd4f 0, #5aac44 100%);
+  color: #fff;
+  cursor: pointer;
+  width: 200px;
+  height: 50px;
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px #ccc;
+  margin-bottom: 10px;
+  border: none;
+}
+
+.trellify-popup__btn:hover {
+  background: linear-gradient(to bottom, #5aac44 0, #519839 100%);
 }
