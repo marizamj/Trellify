@@ -54,9 +54,9 @@ const getLists = (boardId) => {
 }
 
 const sendCard = (card) => {
-  const { name, idList, due } = card;
+  const { name, idList, due, desc } = card;
 
-  return trelloFetch(`cards`, { name, idList, due, token }, 'POST');
+  return trelloFetch(`cards`, { name, idList, due, desc, token }, 'POST');
 }
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {

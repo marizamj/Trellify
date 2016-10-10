@@ -182,7 +182,8 @@ document.addEventListener('mouseup', e => {
     const card = {
       name: UserSelection.lastSelection.text,
       idList: UserSelection.lastSelection.selectedListId,
-      due: null
+      due: null,
+      desc: `Source: ${window.location.href}`
     };
 
     sendCard(card, res => {
