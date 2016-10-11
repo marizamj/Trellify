@@ -113,10 +113,6 @@
   background: linear-gradient(to bottom, #5aac44 0, #519839 100%);
 }
 
-.btn-close {
-  font-weight: bold;
-}
-
 .trellify-popup__text {
   font-family: 'Roboto-Regular';
   margin-bottom: 10px;

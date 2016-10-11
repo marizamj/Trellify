@@ -36,10 +36,9 @@ const openInTrello = (url) => {
 }
 
 function loadStyle() {
-  return fetch(chrome.extension.getURL('index.css'))
+  return fetch(chrome.extension.getURL('all_urls.css'))
   .then(res => res.text());
 }
-
 
 function setPopupHTML(popup, params) {
   const shadowPopup = popup.shadowRoot;
@@ -51,8 +50,8 @@ function setPopupHTML(popup, params) {
       const { link } = params;
       content = `
         <div class="trellify-popup__text">Card sent succesfully.</div>
-        <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
-        <button class="trellify-popup__btn btn-close">Close</button>
+        <button class="trellify-popup__btn js-btn-link" data-link="${link}">Show in Trello</button>
+        <button class="trellify-popup__btn js-btn-close">Close</button>
       `;
     }
 
@@ -65,7 +64,7 @@ function setPopupHTML(popup, params) {
     if (params.member === 'no-token') {
       content = `
         <div class="trellify-popup__text">Authorize to use Trellify.</div>
-        <button class="trellify-popup__btn btn-auth">Authorize</button>
+        <button class="trellify-popup__btn js-btn-auth">Authorize</button>
       `;
     }
 
@@ -98,7 +97,7 @@ function setPopupHTML(popup, params) {
         <div class="trellify-popup__card">
           <textarea name="card">${userSelection.text}</textarea>
         </div>
-        <button class="trellify-popup__btn btn-send">Send to Trello</button>
+        <button class="trellify-popup__btn js-btn-send">Send to Trello</button>
       `;
     }
 
@@ -188,8 +187,7 @@ document.addEventListener('mouseup', e => {
       });
 
       popup.shadowRoot.addEventListener('click', e => {
-        if (e.target.classList.contains('btn-send')) {
-          console.log('here');
+        if (e.target.classList.contains('js-btn-send')) {
           const card = {
             name: UserSelection.lastSelection.text,
             idList: UserSelection.lastSelection.selectedListId,
@@ -202,16 +200,16 @@ document.addEventListener('mouseup', e => {
           });
         }
 
-        if (e.target.classList.contains('btn-close')) {
+        if (e.target.classList.contains('js-btn-close')) {
           popup.remove();
         }
 
-        if (e.target.classList.contains('btn-link')) {
+        if (e.target.classList.contains('js-btn-link')) {
           const url = e.target.getAttribute('data-link');
           openInTrello(url);
         }
 
-        if (e.target.classList.contains('btn-auth')) {
+        if (e.target.classList.contains('js-btn-auth')) {
           chrome.runtime.sendMessage({ type: 'authorize' }, () => {
             popup.remove();
           });
