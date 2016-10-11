@@ -19,17 +19,8 @@ function trelloFetch(url, params, method) {
 }
 
 function trelloAuth() {
-  // chrome.storage.sync.remove('token', () => {
   const url = `https://trello.com/1/authorize?callback_method=fragments&return_url=/&scope=read,write,account&expiration=never&name=Trellify&key=${appKey}`;
   window.open(url);
-  // chrome.storage.sync.get('token', (obj) => {
-  //   if (obj.token) {
-  //     token = obj.token;
-
-  //   } else {
-  //   }
-  // });
-  // });
 }
 
 const getMember = () => {
@@ -120,4 +111,3 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   }
 });
 
-// trelloAuth();
