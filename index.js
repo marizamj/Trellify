@@ -35,69 +35,75 @@ const openInTrello = (url) => {
   chrome.runtime.sendMessage({ type: 'open-trello', url });
 }
 
-function setPopupHTML(popup, params) {
+function loadStyle() {
+  return fetch(chrome.extension.getURL('index.css'))
+  .then(res => res.text());
+}
 
+
+function setPopupHTML(popup, params) {
   const shadowPopup = popup.shadowRoot;
 
-  if (params.end) {
-    const { link } = params;
+  loadStyle().then(style => {
+    let content = '';
 
-    shadowPopup.innerHTML = `
-      <div class="trellify-popup__text">Card sent succesfully.</div>
-      <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
-      <button class="trellify-popup__btn btn-close">Close</button>
-    `;
+    if (params.end) {
+      const { link } = params;
+      content = `
+        <div class="trellify-popup__text">Card sent succesfully.</div>
+        <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
+        <button class="trellify-popup__btn btn-close">Close</button>
+      `;
+    }
 
-  }
+    if (params.member === 'no-member' || !params.member && !params.end) {
+      content = `
+        <div class="trellify-popup__text">Loading...</div>
+      `;
+    }
 
-  if (params.member === 'no-member' || !params.member && !params.end) {
-    shadowPopup.innerHTML = `
-      <div class="trellify-popup__text">Loading...</div>
-    `;
-  }
+    if (params.member === 'no-token') {
+      content = `
+        <div class="trellify-popup__text">Authorize to use Trellify.</div>
+        <button class="trellify-popup__btn btn-auth">Authorize</button>
+      `;
+    }
 
-  if (params.member === 'no-token') {
-    shadowPopup.innerHTML = `
-      <div class="trellify-popup__text">Authorize to use Trellify.</div>
-      <button class="trellify-popup__btn btn-auth">Authorize</button>
-    `;
-  }
+    if (params.member && params.member !== 'no-token' && params.member !== 'no-member') {
+      const { userSelection, member, lists } = params;
 
-  if (params.member && params.member !== 'no-token' && params.member !== 'no-member') {
-    const { userSelection, member, lists } = params;
-
-    shadowPopup.innerHTML = `
-
-      <style>${shadowStyle}</style>
-
-      <div class="trellify-popup__select">
-        <select name="boards">
-          <option value="null">Choose board</option>
-          ${
-            member.boards.map(board => {
-              return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
-            })
-          }
-        </select>
-      </div>
-      <div class="trellify-popup__select">
-        <select ${lists ? `` : `disabled`} name="lists">
-          ${
-            lists ?
-              lists.map(list => {
-                return `<option value="${list.id}">${list.name}</option>`
+      content = `
+        <div class="trellify-popup__select">
+          <select name="boards">
+            <option value="null">Choose board</option>
+            ${
+              member.boards.map(board => {
+                return `<option value="${board.id}" ${ board.id === userSelection.selectedBoardId ? `selected` : `` } >${board.name}</option>`
               })
-              :
-              `<option value="null">Choose list</option>`
-          }
-        </select>
-      </div>
-      <div class="trellify-popup__card">
-        <textarea name="card">${userSelection.text}</textarea>
-      </div>
-      <button class="trellify-popup__btn btn-send">Send to Trello</button>
-    `;
-  }
+            }
+          </select>
+        </div>
+        <div class="trellify-popup__select">
+          <select ${lists ? `` : `disabled`} name="lists">
+            ${
+              lists ?
+                lists.map(list => {
+                  return `<option value="${list.id}">${list.name}</option>`
+                })
+                :
+                `<option value="null">Choose list</option>`
+            }
+          </select>
+        </div>
+        <div class="trellify-popup__card">
+          <textarea name="card">${userSelection.text}</textarea>
+        </div>
+        <button class="trellify-popup__btn btn-send">Send to Trello</button>
+      `;
+    }
+
+    shadowPopup.innerHTML = `<style>${style}</style> ${content}`;
+  });
 }
 
 function renderPopupAtSelection(userSelection, member) {
@@ -151,7 +157,7 @@ document.addEventListener('mouseup', e => {
         setPopupHTML(popup, { userSelection, member });
       }
 
-      popup.addEventListener('change', e => {
+      popup.shadowRoot.addEventListener('change', e => {
         if (e.target.matches('[name="boards"]') && e.target.value !== 'null') {
           const boardId = e.target.value;
           UserSelection.lastSelection.selectedBoardId = boardId;
@@ -181,35 +187,38 @@ document.addEventListener('mouseup', e => {
         }
       });
 
+      popup.shadowRoot.addEventListener('click', e => {
+        if (e.target.classList.contains('btn-send')) {
+          console.log('here');
+          const card = {
+            name: UserSelection.lastSelection.text,
+            idList: UserSelection.lastSelection.selectedListId,
+            due: null,
+            desc: `Source: ${window.location.href}`
+          };
+
+          sendCard(card, res => {
+            setPopupHTML(popup, { end: true, link: res.url });
+          });
+        }
+
+        if (e.target.classList.contains('btn-close')) {
+          popup.remove();
+        }
+
+        if (e.target.classList.contains('btn-link')) {
+          const url = e.target.getAttribute('data-link');
+          openInTrello(url);
+        }
+
+        if (e.target.classList.contains('btn-auth')) {
+          chrome.runtime.sendMessage({ type: 'authorize' }, () => {
+            popup.remove();
+          });
+        }
+      });
+
       icon.remove();
-    });
-  }
-
-  if (e.target.classList.contains('btn-send')) {
-    const card = {
-      name: UserSelection.lastSelection.text,
-      idList: UserSelection.lastSelection.selectedListId,
-      due: null,
-      desc: `Source: ${window.location.href}`
-    };
-
-    sendCard(card, res => {
-      setPopupHTML(popup, { end: true, link: res.url });
-    });
-  }
-
-  if (e.target.classList.contains('btn-close')) {
-    popup.remove();
-  }
-
-  if (e.target.classList.contains('btn-link')) {
-    const url = e.target.getAttribute('data-link');
-    openInTrello(url);
-  }
-
-  if (e.target.classList.contains('btn-auth')) {
-    chrome.runtime.sendMessage({ type: 'authorize' }, () => {
-      popup.remove();
     });
   }
 
@@ -227,13 +236,4 @@ document.addEventListener('mouseup', e => {
     tIcon.style.left = `${s.rect.right}px`;
     tIcon.style.top = `${s.rect.top - 30 + window.scrollY}px`;
   }
-});
-
-let shadowStyle = '';
-fetch(chrome.extension.getURL('index.css'))
-.then(res => res.text())
-.then(text => {
-  console.log(text);
-
-  shadowStyle = text;
 });

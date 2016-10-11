@@ -77,7 +77,6 @@
   margin-bottom: 10px;
   height: 35px;
   line-height: 35px;
-  font-size: 18px;
 }
 
 .trellify-popup__select [name="lists"]:disabled {
@@ -86,6 +85,7 @@
 
 .trellify-popup__select [name="boards"],
 .trellify-popup__select [name="lists"] {
+  font-size: 18px;
   border: none;
   width: 270px;
   font-family: 'Roboto-Regular', sans-serif;
