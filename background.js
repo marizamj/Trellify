@@ -10,7 +10,7 @@ chrome.storage.sync.get('token', (obj) => {
 function trelloFetch(url, params, method) {
   const appKey = '9b83fca52b91674cb3b8328a5d81c412';
   const paramsWithKey = Object.assign({}, params, { key: appKey });
-  const keyValues = Object.keys(paramsWithKey).map(key => `${key}=${paramsWithKey[key]}`);
+  const keyValues = Object.keys(paramsWithKey).map(key => `${key}=${encodeURIComponent(paramsWithKey[key])}`);
 
   return fetch(
     `https://trello.com/1/${url}?${keyValues.join('&')}`,
