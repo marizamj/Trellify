@@ -37,6 +37,7 @@
   ],
 
   "web_accessible_resources": [
+    "index.css",
     "icon.png",
     "Roboto/Roboto-Light.ttf",
     "Roboto/Roboto-Regular.ttf"

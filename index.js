@@ -36,10 +36,13 @@ const openInTrello = (url) => {
 }
 
 function setPopupHTML(popup, params) {
+
+  const shadowPopup = popup.shadowRoot;
+
   if (params.end) {
     const { link } = params;
 
-    popup.innerHTML = `
+    shadowPopup.innerHTML = `
       <div class="trellify-popup__text">Card sent succesfully.</div>
       <button class="trellify-popup__btn btn-link" data-link="${link}">Show in Trello</button>
       <button class="trellify-popup__btn btn-close">Close</button>
@@ -48,13 +51,13 @@ function setPopupHTML(popup, params) {
   }
 
   if (params.member === 'no-member' || !params.member && !params.end) {
-    popup.innerHTML = `
+    shadowPopup.innerHTML = `
       <div class="trellify-popup__text">Loading...</div>
     `;
   }
 
   if (params.member === 'no-token') {
-    popup.innerHTML = `
+    shadowPopup.innerHTML = `
       <div class="trellify-popup__text">Authorize to use Trellify.</div>
       <button class="trellify-popup__btn btn-auth">Authorize</button>
     `;
@@ -63,7 +66,10 @@ function setPopupHTML(popup, params) {
   if (params.member && params.member !== 'no-token' && params.member !== 'no-member') {
     const { userSelection, member, lists } = params;
 
-    popup.innerHTML = `
+    shadowPopup.innerHTML = `
+
+      <style>${shadowStyle}</style>
+
       <div class="trellify-popup__select">
         <select name="boards">
           <option value="null">Choose board</option>
@@ -100,6 +106,7 @@ function renderPopupAtSelection(userSelection, member) {
   const tPopup = document.createElement('div');
   tPopup.classList.add('trellify-popup');
 
+  const shadowPopup = tPopup.createShadowRoot();
   setPopupHTML(tPopup, { userSelection, member });
 
   let tPopupX;
@@ -222,4 +229,11 @@ document.addEventListener('mouseup', e => {
   }
 });
 
+let shadowStyle = '';
+fetch(chrome.extension.getURL('index.css'))
+.then(res => res.text())
+.then(text => {
+  console.log(text);
 
+  shadowStyle = text;
+});

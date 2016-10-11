@@ -67,6 +67,7 @@
   font-size: 18px;
   resize: none;
   outline-color: #ddd;
+  background: white;
 }
 
 .trellify-popup__select {
